@@ -56,8 +56,9 @@ class EventModel{
 function eventModelLoader(rawListObj){
     let result = []; 
     if((rawListObj !== undefined && rawListObj !== null && rawListObj.length > 0)){
-    rawListObj.forEach(function(i, index, array) {      
-        result.push(new EventModel(i.id, i.image, i.isAvailable, i.price, i.title, i.type, i.url, i.Date));
-    });
+        rawListObj.forEach(function(i, index, array) {      
+            result.push(new EventModel(i.id, i.image, i.isAvailable, i.price, i.title, i.type, i.url, i.Date));
+        });
     }
+    return result;
 }
