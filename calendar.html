@@ -7,7 +7,8 @@
     <meta charset="utf-8">
     <link rel="shortcut icon" href="#" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.print.min.css" rel="stylesheet" media="print" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.print.min.css" rel="stylesheet"
+        media="print" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js"></script>
@@ -56,8 +57,8 @@
         </div>
         <div id="calendar">
             <span v-for="type in types">
-                    <input type="checkbox" v-bind:id="type.text" v-bind:value="type.value" v-model="selected" @change="onChange($event)">
-                    <label v-bind:for="type.text" v-bind:class="type.value.toLowerCase()">{{ type.text }}</label>          
+                <input type="checkbox" v-bind:id="type.text" v-bind:value="type.value" v-model="selected" @change="onChange($event)">
+                <label v-bind:for="type.text" v-bind:class="type.value.toLowerCase()">{{ type.text }}</label>
             </span>
             <br />
             <input type="checkbox" id="foc" v-model="foc" @change="onChange($event)">
@@ -128,13 +129,11 @@
 
                     if (_eventList !== undefined || _eventList !== null) {
                         //add calendar events
-                        rebindCalendarEvents(_eventList.filter(e => _typeSelected.includes(e.type) && ((_showFOCOnly &&
-                            e.price == "FOC") || _showFOCOnly == false)));
+                        rebindCalendarEvents(_eventList.filter(e => _typeSelected.includes(e.type) && ((_showFOCOnly && e.price == "FOC") || _showFOCOnly == false)));
 
                         //list events without date
                         this.$data.noDateEvents = _eventList.filter(function (e) {
-                            if (_typeSelected.includes(e.type) && e.start === null && ((_showFOCOnly && e.price == "FOC") ||
-                                _showFOCOnly == false)) {
+                            if (_typeSelected.includes(e.type) && e.start === null && ((_showFOCOnly && e.price == "FOC") || _showFOCOnly == false)) {
                                 return true;
                             } else {
                                 return false;
