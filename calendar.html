@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="http://localhost:8080/TestVue/">
+    <title>Introduction ^`^t Vue.js</title>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="#" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css" rel="styles$
+    <link href="
+        https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.print.min.css" rel="$
+    <script src="
+        https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"> </script> <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+        </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
+    <script type="text/javascript" src="./Data/vanilla.js"></script>
+    <style>
+        body {
+        margin: 40px 10px;
+        padding: 0;
+        font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+        font-size: 14px;
+      }
+      #calendar {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .beginner {
+        font-weight: bold;
+        color: #00a65a;
+      }
+      .intermediate {
+        font-weight: bold;
+        color: #f39c12;
+      }
+      .professional {
+        font-weight: bold;
+        color: #0073b7;
+      }
+      .closed {
+        font-weight: bold;
+        color: #808080;
+    }
+      .fc-month-view span.fc-title{
+        white-space: normal;
+      }
+      li { cursor: pointer; }
+      [v-cloak] {display: none}
+    </style>
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <div>
+            <h3>Synced @ {{syncedDate}} (Total Records: {{totalRecordsCount}})</h3>
+        </div>
+        <div id="calendar">
+            <span v-for="type in types">
+                <input type="checkbox" v-bind:id="type.text" v-bind:value="type.value" v-model="selected" @change$
+                    <label v-bind:for="type.text" v-bind:class="type.value.toLowerCase()">{{ type.text }}</label> $
+            </span>
+            <br />
+            <input type="checkbox" id="foc" v-model="foc" @change="onChange($event)">
+            <label for="foc">Show only FOC Events</label>
+            <br />
+            <h4 v-if="noDateEvents.length > 0">No Date Events:</h4>
+            <ul v-for="event in noDateEvents">
+                <li :class="event.isAvailable.toLowerCase() !== 'available'? 'closed': event.type.toLowerCase()" $ </ul>
+                    </div> </div> <script>
+                        var app = new Vue({
+                            el: '#app',
+                            data: {
+                                foc: false,
+                                selected: ['Beginner', 'Intermediate', 'Professional'],
+                                types: [
+                                    { text: 'Beginner', value: 'Beginner' },
+                                    { text: 'Intermediate', value: 'Intermediate' },
+                                    { text: 'Professional', value: 'Professional' }
+                                ],
+                                noDateEvents: [],
+                                eventList: [],
+                                base_url: "",
+                                syncedDate: "",
+                                totalRecordsCount: 0
+                            },
+                            computed: {
+                                /*
+                                eventClass: function (event) {
+                                //event.isAvailable.toLowerCase() !== 'available'? 'closed': event.type.toLowerCase()
+                                return {
+                                active: true,
+                                'professional' : event.isAvailable.toLowerCase() == 'available'
+                                };
+                                }*/
+                            },
+                            mounted: function () {
+                                //init the calendar
+                                $('#calendar').fullCalendar({
+                                    header: {
+                                        left: 'prev,next',
+                                        center: 'title',
+                                        right: ''
+                                    },
+                                    defaultDate: moment(new Date()).format("YYYY-MM-DD"), //'2018-03-12'
+                                    navLinks: false, // can click day/week names to navigate views
+                                    editable: false,
+                                    businessHours: true, // display business hours
+                                    eventLimit: true, // allow "more" link when too many events
+                                    events: [],
+                                    eventClick: function (eventObj) {
+                                        return openURL(eventObj.url);
+                                    }
+                                });
+                            },
+                            created: function () {
+                                this.$data.base_url = $('head base').attr('href');
+                                this.loadData();
+                            },
+                            methods: {
+                                onChange: function (event) {
+                                    let _eventList = this.$data.eventList;
+                                    let _typeSelected = this.$data.selected;
+                                    let _showFOCOnly = this.$data.foc;
+
+                                    if (_eventList !== undefined || _eventList !== null) {
+                                        //add calendar events
+                                        rebindCalendarEvents(_eventList.filter(e => _typeSelected.includes(e.type) && ((_showFOCOnly &&
+                                            e.price == "FOC") || _showFOCOnly == false)));
+
+                                        //list events without date
+                                        this.$data.noDateEvents = _eventList.filter(function (e) {
+                                            if (_typeSelected.includes(e.type) && e.start === null && ((_showFOCOnly && e.price == "FOC") ||
+                                                _showFOCOnly == false)) {
+                                                return true;
+                                            } else {
+                                                return false;
+                                            }
+                                        });
+                                    }
+                                },
+                                eventClicked: function (event, url) {
+                                    return openURL(url);
+                                },
+                                populateEventList: function (rawEventList) {
+                                    if (rawEventList !== undefined && rawEventList !== null && rawEventList.length > 0) {
+                                        console.log("loading event list");
+                                        this.$data.eventList = eventModelLoader(rawEventList);
+                                    }
+                                    this.onChange();
+                                },
+                                loadData: function () {
+                                    let self = this;
+                                    axios.get(self.$data.base_url + 'Data/events.json')
+                                        .then(function (response) {
+                                            // handle success
+                                            console.log(response);
+                                            self.syncedDate = response.data.GetDateTime;
+                                            self.totalRecordsCount = response.data.RecordCount;
+                                            self.populateEventList(response.data.Events);
+                                        })
+                                        .catch(function (error) {
+                                            // handle error
+                                            console.log(error);
+                                        });
+                                }
+                            }
+                        });
+
+                        function rebindCalendarEvents(eventList) {
+                            console.log("rendering event to calendar: " + eventList.length);
+                            $('#calendar').fullCalendar('removeEvents');
+                            $('#calendar').fullCalendar('addEventSource', eventList);
+                            $('#calendar').fullCalendar('rerenderEvents');
+                        }
+
+                        function openURL(url) {
+                            //open url in new tab
+                            if (url !== null && url !== undefined && url !== "") {
+                                window.open(url);
+                            }
+                            return false;
+                        }
+                    </script>
+</body>
+
+</html>
